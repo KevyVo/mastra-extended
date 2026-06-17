@@ -1,5 +1,4 @@
 name: Defang
-
 on:
   push:
     branches:
@@ -7,48 +6,45 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: "Whether to deploy up or down"
+        description: Whether to deploy up or down
         required: true
-        default: "up"
+        default: up
         type: choice
         options:
           - up
           - down
       stack:
-        description: "The stack to deploy up or down. (Leave blank for default)"
-        default: ""
-
+        description: The stack to deploy up or down. (Leave blank for default)
+        default: workshopd
 jobs:
   defang:
-    name: Defang ${{ github.event.inputs.action || 'up' }} ${{
-      github.event.inputs.stack || 'default stack' }}
-    environment: defang-${{ github.event.inputs.stack || 'production' }}
+    name: Defang ${{ github.event.inputs.action || 'up' }} ${{ github.event.inputs.stack || 'workshopd' }}
     runs-on: ubuntu-latest
     timeout-minutes: 70
     permissions:
       contents: read
       id-token: write
-
     concurrency:
       cancel-in-progress: false
-      group: deploy-${{ github.event.inputs.stack || 'default' }}
-
+      group: deploy-mastra-extended-${{ github.event.inputs.stack || 'workshopd' }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
-
-      - name: Defang ${{ github.event.inputs.action || 'up' }} ${{
-          github.event.inputs.stack || 'default stack' }}
+      - name: Defang ${{ github.event.inputs.action || 'up' }} ${{ github.event.inputs.stack || 'workshopd' }}
         uses: DefangLabs/defang-github-action@v2
         with:
           command: ${{ github.event.inputs.action || 'up' }}
-          stack: ${{ github.event.inputs.stack || '' }}
-          config-vars-init-random: POSTGRES_PASSWORD
+          project: mastra-extended
+          stack: ${{ github.event.inputs.stack || 'workshopd' }}
+          compose-files: compose.yaml
+          config-env-vars: POSTGRES_PASSWORD
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-
       - name: Deployment Summary
         uses: DefangLabs/defang-github-action@v2
         with:
           command: services
-          stack: ${{ github.event.inputs.stack || '' }}
+          project: mastra-extended
+          stack: ${{ github.event.inputs.stack || 'workshopd' }}
+          compose-file: compose.yaml
+    environment: defang-workshopd
