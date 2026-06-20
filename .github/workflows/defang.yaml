@@ -1,8 +1,5 @@
 name: Defang
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       action:
@@ -47,4 +44,4 @@ jobs:
           project: mastra-extended
           stack: ${{ github.event.inputs.stack || 'workshopaws' }}
           compose-file: compose.yaml
-    environment: defang-workshopaws
+    environment: defang-${{ github.event.inputs.stack }}
